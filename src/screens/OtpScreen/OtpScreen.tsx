@@ -2,10 +2,9 @@ import {
   View,
   StyleSheet,
   Pressable,
-  KeyboardAvoidingView,
   Keyboard,
-  ScrollView,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from "react-native";
 import React, { FC, useEffect, useState } from "react";
 import PrimaryTitle from "../../components/typography/PrimaryTitle";
@@ -17,10 +16,13 @@ import { OtpInput } from "../../components/OtpInput";
 
 type OtpScreenProps = {};
 
+const OTP_LENGTH = 4;
+
 const OtpScreen: FC<OtpScreenProps> = () => {
   const [code, setCode] = useState("");
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -42,9 +44,11 @@ const OtpScreen: FC<OtpScreenProps> = () => {
 
   const handleVerify = () => {
     Keyboard.dismiss();
+    setLoading(true);
     console.log("OTP Code: ", code);
     setTimeout(() => {
       console.log("OTP Submitted Successfully: ", code);
+      setLoading(false);
     }, 2000);
   };
 
@@ -56,6 +60,10 @@ const OtpScreen: FC<OtpScreenProps> = () => {
     }
   };
 
+  if (loading) {
+    return <ActivityIndicator animating={loading} />;
+  }
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
@@ -63,7 +71,11 @@ const OtpScreen: FC<OtpScreenProps> = () => {
         <BodyText text="Enter the verification code we just sent you on" />
         <SecondaryTitle text="bardegaurav09@gmail.com" style={styles.email} />
         <OtpInput onChangeCode={setCode} />
-        <Button title="Verify" onPress={handleVerify} />
+        <Button
+          title="Verify"
+          disabled={code.length !== OTP_LENGTH}
+          onPress={handleVerify}
+        />
         <View style={styles.resendContainer}>
           <BodyText
             text={
